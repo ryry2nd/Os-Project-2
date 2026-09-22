@@ -13,7 +13,7 @@ int readBoard(int **board){
 
     for(int i = 0; i < SIZE; i++){
         for(int j = 0; j < SIZE; j++){
-            if(fscanf(file, "%d", &board[i][j]) != 1){
+            if(fscanf(file, "%d", board[i] + j) != 1){
                 printf("Error reading board from file.\n");
                 fclose(file);
                 return 1;
@@ -72,8 +72,6 @@ int main(int argc, char **argv){
 	printf("Running version %d\n", version);
 
     int **board = allocBoard();
-
-	printBoard(board);
 
     if(readBoard(board)){ //read board from file and check for success
         printf("Failed to read the board from the file.\n");
