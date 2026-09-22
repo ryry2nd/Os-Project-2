@@ -34,14 +34,23 @@ void printBoard(int board[SIZE][SIZE]){
         printf("\n"); //move to next line after printing each row
     }
 }
-int main(int argc, char *argv[]){
+int main(int argc, char **argv){
     //use command line to check which version to run using 1 or 2
-    if((argv[1], 1) == 0){
-        printf("Running version 1\n");
-    }
-    else if((argv[1], 2) == 0){
-        printf("Running version 2\n");
-    }
+	int version;
+	if (argc < 2) {
+		printf("Warning: invalid option. Type 1 or 2\n");
+		version = 1;
+	}
+	else{
+		version = atoi(argv[1]);
+		if (version != 1 && version != 2) {
+			printf("Warning: invalid option. Type 1 or 2\n");
+			version = 1;
+		}
+}
+
+	printf("Running version %d\n", version);
+
     int board[SIZE][SIZE]; //declare a 2D array to hold the Sudoku board
 
     if(readBoard(board)){ //read board from file and check for success
