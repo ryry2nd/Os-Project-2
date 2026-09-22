@@ -4,7 +4,7 @@
 
 #define SIZE 9
 
-int readBoard(int board[SIZE][SIZE]){
+int readBoard(int **board){
     FILE *file = fopen("input.txt", "r"); // Open the file for reading
     if (file == NULL) { //confirm file opened successfully
         printf("Error opening file.\n");
@@ -25,7 +25,7 @@ int readBoard(int board[SIZE][SIZE]){
     return 0;
 }
 
-void printBoard(int board[SIZE][SIZE]){
+void printBoard(int **board){
     for(int i = 0; i < SIZE; i++){
         for(int j = 0; j < SIZE; j++){
             printf("%d ", board[i][j]); // Print each number in the row
@@ -34,6 +34,25 @@ void printBoard(int board[SIZE][SIZE]){
         printf("\n"); //move to next line after printing each row
     }
 }
+
+int **allocBoard() {
+	// Allocate the pointer array first
+	int **board = (int**)malloc(SIZE * sizeof(int*));
+
+	// Then allocate each row
+	for(int i = 0; i < SIZE; i++) {
+		board[i] = (int*)malloc(SIZE * sizeof(int));
+	}
+	return board;
+}
+
+void deallocBoard(int **board) {
+	for(int i = 0; i < SIZE; i++) {
+		free(board[i]); // free each row
+	}
+	free(board); // free the pointer array itself
+}
+
 int main(int argc, char **argv){
     //use command line to check which version to run using 1 or 2
 	int version;
@@ -51,7 +70,7 @@ int main(int argc, char **argv){
 
 	printf("Running version %d\n", version);
 
-    int board[SIZE][SIZE]; //declare a 2D array to hold the Sudoku board
+    int **board = allocBoard();
 
     if(readBoard(board)){ //read board from file and check for success
         printf("Failed to read the board from the file.\n");
@@ -60,5 +79,6 @@ int main(int argc, char **argv){
 
     printBoard(board);
 
+	deallocBoard(board);
     return 0;
 }
