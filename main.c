@@ -7,21 +7,21 @@ int readBoard(int board[SIZE][SIZE]){
     FILE *file = fopen("input.txt", "r"); // Open the file for reading
     if (file == NULL) { //confirm file opened successfully
         printf("Error opening file.\n");
-        return 0; // Return 0 to indicate failure
+        return 1;
     }
-    
+
     for(int i = 0; i < SIZE; i++){
         for(int j = 0; j < SIZE; j++){
             if(fscanf(file, "%d", &board[i][j]) != 1){
                 printf("Error reading board from file.\n");
-                fclose(file); // Close the file before returning
-                return 0; // Return 0 to indicate failure
+                fclose(file);
+                return 1;
             }
         }
     }
 
-    fclose(file); // Close the file after reading
-    return 1; // Return 1 to indicate success
+    fclose(file);
+    return 0;
 }
 
 void printBoard(int board[SIZE][SIZE]){
@@ -43,12 +43,12 @@ int main(int argc, char *argv[]){
     }
     int board[SIZE][SIZE]; //declare a 2D array to hold the Sudoku board
 
-    if(readBoard(board) == 0){ //read board from file and check for success
+    if(readBoard(board)){ //read board from file and check for success
         printf("Failed to read the board from the file.\n");
-        return 1; // Exit the program if reading the board failed
+        return 1;
     }
 
     printBoard(board);
 
-    return 0; // Exit the program successfully
+    return 0;
 }
