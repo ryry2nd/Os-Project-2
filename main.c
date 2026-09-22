@@ -4,6 +4,11 @@
 
 #define SIZE 9
 
+typedef struct {
+    int **board;
+    int num;
+} ThreadArgument;
+
 int readBoard(int **board){
     FILE *file = fopen("input.txt", "r"); // Open the file for reading
     if (file == NULL) { //confirm file opened successfully
@@ -54,6 +59,16 @@ void deallocBoard(int **board) {
 	free(board); // free the pointer array itself
 }
 
+void *threadFuncTest(void *arg) {
+	ThreadArgument *a = (ThreadArgument *) arg;
+	int **board = a->board;
+	int num = a->num;
+
+	printBoard(board);
+	printf("The Argument is %d\n", num);
+	return NULL;
+}
+
 int main(int argc, char **argv){
     //use command line to check which version to run using 1 or 2
 	int version;
@@ -78,7 +93,14 @@ int main(int argc, char **argv){
         return 1;
     }
 
-    printBoard(board);
+	ThreadArgument args = {};
+
+	args.board = board;
+	args.num = 5;
+
+	pthread_t tid;
+	pthread_create(&tid, NULL, threadFuncTest, (void*)&args);
+	pthread_join(tid, NULL);
 
 	deallocBoard(board);
     return 0;
