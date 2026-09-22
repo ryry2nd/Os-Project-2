@@ -47,7 +47,7 @@ int main(int argc, char **argv){
 			printf("Warning: invalid option. Type 1 or 2\n");
 			version = 1;
 		}
-}
+	}
 
 	printf("Running version %d\n", version);
 
