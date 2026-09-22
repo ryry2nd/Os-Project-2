@@ -43,6 +43,7 @@ int **allocBoard() {
 	for(int i = 0; i < SIZE; i++) {
 		board[i] = (int*)malloc(SIZE * sizeof(int));
 	}
+
 	return board;
 }
 
@@ -71,6 +72,8 @@ int main(int argc, char **argv){
 	printf("Running version %d\n", version);
 
     int **board = allocBoard();
+
+	printBoard(board);
 
     if(readBoard(board)){ //read board from file and check for success
         printf("Failed to read the board from the file.\n");
