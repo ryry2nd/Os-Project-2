@@ -10,7 +10,7 @@ typedef struct {
     int **board;
     int currThread; // the id that shows which part of the board to do
 	int maxthread; // the maximum amount of threads being run
-	int *isValid;
+	int *isValid; // the final flag that says if the board is valid or not. if it is ever 0 the program terminates immediately
 } ThreadArgument;
 
 int readBoard(int **board){
@@ -196,6 +196,20 @@ void *boxCheck(void *arg) {
 	return NULL;
 }
 
+// returns 1 if valid, returns 0 if not valid
+int rowcheck(int **board, int rownum) {
+	printf("Row: %d ", rownum + 1);
+	return 1;
+}
+int colcheck(int **board, int colnum) {
+	printf("Col: %d ", colnum + 1);
+	return 1;
+}
+int boxcheck(int **board, int boxnum) {
+	printf("Box: %d ", boxnum + 1);
+	return 1;// fun math fact the number of boxes is always equal to SIZE
+}
+
 void *workerThread(void *arg) {
 	ThreadArgument *a = (ThreadArgument *)arg;
 	int **board = a->board;
@@ -220,14 +234,19 @@ void *workerThread(void *arg) {
 		if (!*isValid) {
 			return NULL; // if the board is no longer valid there isn't any point in continuing
 		}
+		int check = 1;
 		if (i < SIZE) {
-			printf("Row: %d ", i + 1);
+			check = rowcheck(board, i);
 		}
 		else if (i < SIZE * 2) {
-			printf("Col: %d ", (i - SIZE) + 1);
+			check = colcheck(board, i - SIZE);
 		}
 		else if (i < SIZE * 3) {
-			printf("Box: %d ", (i - SIZE * 2) + 1);
+			check = boxcheck(board, (i - SIZE * 2));
+		}
+		if (!check) {
+			*isValid = 0;
+			return NULL;
 		}
 	}
 
