@@ -13,6 +13,7 @@ typedef struct {
 	int *isValid; // the final flag that says if the board is valid or not. if it is ever 0 the program terminates immediately
 } ThreadArgument;
 
+// Reads from the file and sends it to the board pointer
 int readBoard(int **board){
     FILE *file = fopen("input.txt", "r"); // Open the file for reading
     if (file == NULL) { //confirm file opened successfully
@@ -34,6 +35,7 @@ int readBoard(int **board){
     return 0;
 }
 
+// debug prints out the board
 void printBoard(int **board){
     for(int i = 0; i < SIZE; i++){
         for(int j = 0; j < SIZE; j++){
@@ -44,6 +46,7 @@ void printBoard(int **board){
     }
 }
 
+// uses malloc to allocate the memory for the board size
 int **allocBoard() {
 	// Allocate the pointer array first
 	int **board = (int**)malloc(SIZE * sizeof(int*));
@@ -56,6 +59,7 @@ int **allocBoard() {
 	return board;
 }
 
+// frees all the memory the board uses without causing segfaults or leaks
 void deallocBoard(int **board) {
 	for(int i = 0; i < SIZE; i++) {
 		free(board[i]); // free each row
@@ -210,6 +214,7 @@ int boxcheck(int **board, int boxnum) {
 	return 1;// fun math fact the number of boxes is always equal to SIZE
 }
 
+// each thread runs this. it splits each job as even as possible for the amount of threads
 void *workerThread(void *arg) {
 	ThreadArgument *a = (ThreadArgument *)arg;
 	int **board = a->board;
@@ -228,7 +233,7 @@ void *workerThread(void *arg) {
 		return NULL;
 	}
 
-	printf("Thread %d running: ", currThread);
+	printf("Thread %d running: ", currThread); // debug statement
 
 	for (int i = start; i < start + size && i < NUMJOBS; i++) {
 		if (!*isValid) {
@@ -255,6 +260,7 @@ void *workerThread(void *arg) {
 	return NULL;
 }
 
+// it takes in the board and the max amount of threads you want and returns if it is valid or not
 int checkBoard(int **board, int maxThreads) {
 	if (maxThreads <= 0) {
 		printf("maxThreads can only be 1 or higher\n");
