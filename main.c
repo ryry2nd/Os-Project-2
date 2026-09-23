@@ -91,6 +91,9 @@ void *workerThread(void *arg) {
 	printf("thread %d running: ", currThread);
 
 	for (int i = start; i < start + size && i < NUMJOBS; i++) {
+		if (!*isValid) {
+			return NULL; // if the board is no longer valid there isn't any point in continuing
+		}
 		if (i < SIZE) {
 			printf("Row: %d ", i + 1);
 		}
