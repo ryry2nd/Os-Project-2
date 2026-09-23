@@ -146,9 +146,12 @@ void *rowCheck(void *arg){
     
     int **board = a->board;
 
+	int overallValid = 1;
+
     for(int row = 0; row < SIZE; row++){
         int seen[9] = {0}; //array to track seen numbers in the row
         int valid = 1;
+
         for(int col = 0; col < SIZE; col++){
             int value = board[row][col];
 
@@ -166,14 +169,14 @@ void *rowCheck(void *arg){
             seen[value-1] = 1;
         }
         
-        if(valid){
-            printf("Row %d is valid\n", row + 1);
-        }
-        else{
-            printf("Row %d is invalid\n", row + 1);
-        }
-        
+        if(!valid){
+			overallValid = 0;
+		}
     }
+
+	if(overallValid == 0){
+		*a->isValid = 0;
+	}
 
     return NULL;
 }
@@ -185,9 +188,12 @@ void *columnCheck(void *arg){
     
     int **board = a->board;
 
+	int overallValid = 1;
+
     for(int col = 0; col < SIZE; col++){
         int seen[9] = {0}; //array to track seen numbers in the column
         int valid = 1;
+
         for(int row = 0; row < SIZE; row++){
             int value = board[row][col];
 
@@ -205,16 +211,64 @@ void *columnCheck(void *arg){
             seen[value-1] = 1;
         }
         
-        if(valid){
-            printf("Column %d is valid\n", col + 1);
-        }
-        else{
-            printf("Column %d is invalid\n", col + 1);
-        }
-        
+        if(!valid){
+            overallValid = 0;
+        }     
     }
 
+	if(overallValid == 0){
+		*a->isValid = 0;
+	}
+
     return NULL;
+}
+
+//check each 3x3 box of the board for validity
+void *boxCheck(void *arg){
+	ThreadArgument *a = (ThreadArgument *)arg;
+	int **board = a->board;
+
+	int overallValid = 1;
+
+	for(int box = 0; box < SIZE; box++){
+		int seen[9] = {0};
+		int valid = 1;
+
+		int startRow = (box/3) * 3;
+		int startCol = (box % 3) * 3;
+
+		//check 3 rows
+		for(int row = startRow; row < startRow + 3; row++){
+			//check 3 columns
+			for(int col = startCol; col < startCol + 3; col++){
+				int value = board[row][col];
+
+				if(value < 1 || value > 9){
+					valid = 0;
+					break;
+				}
+
+				if(seen[value - 1] == 1){
+					valid = 0;
+					break;
+				}
+				seen[value - 1] = 1;
+			}
+
+			if(valid == 0){
+				break;
+			}
+		}
+
+		if(!valid){
+			overallValid = 0;
+		}
+	}
+	if(overallValid == 0){
+		*a->isValid = 0;
+	}
+
+	return NULL;
 }
 
 
@@ -242,29 +296,35 @@ int main(int argc, char **argv){
         return 1;
     }
 
-	ThreadArgument args = {};
 	int isValid = checkBoard(board, 9);
+	ThreadArgument args = {};
 
 	args.board = board;
+	args.isValid = &isValid;
 	args.num = 5;
+
+	pthread_t rowThread;
+	pthread_create(&rowThread, NULL, rowCheck, (void*)&args);
+	pthread_join(rowThread, NULL);
+	
+	pthread_t columnThread;
+	pthread_create(&columnThread, NULL, columnCheck, (void*)&args);
+	pthread_join(columnThread, NULL);
+
+	pthread_t boxThread;
+	pthread_create(&boxThread, NULL, boxCheck, (void*)&args);
+	pthread_join(boxThread, NULL);
 
 	pthread_t tid;
 	pthread_create(&tid, NULL, threadFuncTest, (void*)&args);
 	pthread_join(tid, NULL);
+
 	if (isValid == 0) {
 		printf("Board is considered invalid\n");
 	}
 	else if (isValid == 1) {
 		printf("Board is considered valid\n");
 	}
-
-    pthread_t rowThread;
-    pthread_create(&rowThread, NULL, rowCheck, (void*)&args);
-    pthread_join(rowThread, NULL);
-
-	pthread_t columnThread;
-    pthread_create(&columnThread, NULL, columnCheck, (void*)&args);
-    pthread_join(columnThread, NULL);
 
 
 	deallocBoard(board);
