@@ -69,6 +69,45 @@ void *threadFuncTest(void *arg) {
 	return NULL;
 }
 
+//check each row of the board for validity
+void *rowCheck(void *arg){
+    //convert void pointer to ThreadArgument pointer
+    ThreadArgument *a = (ThreadArgument *) arg;
+    
+    int **board = a->board;
+
+    for(int row = 0; row < SIZE; row++){
+        int seen[9] = {0}; //array to track seen numbers in the row
+        int valid = 1;
+        for(int col = 0; col < SIZE; col++){
+            int value = board[row][col];
+
+            if(value < 1 || value > 9){
+                valid = 0;
+                break;
+            }
+
+            //if we have seen the number already the row is invalid
+            if(seen[value-1] == 1){
+                valid = 0;
+                break;
+            }
+            //mark as seen
+            seen[value-1] = 1;
+        }
+        
+        if(valid){
+            printf("Row %d is valid\n", row + 1);
+        }
+        else{
+            printf("Row %d is invalid\n", row + 1);
+        }
+        
+    }
+
+    return NULL;
+}
+
 int main(int argc, char **argv){
     //use command line to check which version to run using 1 or 2
 	int version;
@@ -96,11 +135,15 @@ int main(int argc, char **argv){
 	ThreadArgument args = {};
 
 	args.board = board;
-	args.num = 5;
+	args.num = 5; 
 
 	pthread_t tid;
 	pthread_create(&tid, NULL, threadFuncTest, (void*)&args);
 	pthread_join(tid, NULL);
+    
+    pthread_t rowThread;
+    pthread_create(&rowThread, NULL, rowCheck, (void*)&args);
+    pthread_join(rowThread, NULL);
 
 	deallocBoard(board);
     return 0;
