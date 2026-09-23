@@ -88,7 +88,7 @@ void *workerThread(void *arg) {
 
 	// printf("thread: %d start %d size %d\n", currThread, start, size);
 
-	printf("thread %d running: ", currThread);
+	printf("Thread %d running: ", currThread);
 
 	for (int i = start; i < start + size && i < NUMJOBS; i++) {
 		if (!*isValid) {
