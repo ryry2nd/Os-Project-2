@@ -8,7 +8,6 @@
 
 typedef struct {
     int **board;
-    int num;
     int currThread; // the id that shows which part of the board to do
 	int maxthread; // the maximum amount of threads being run
 	int *isValid;
@@ -64,89 +63,12 @@ void deallocBoard(int **board) {
 	free(board); // free the pointer array itself
 }
 
-void *threadFuncTest(void *arg) {
-	ThreadArgument *a = (ThreadArgument *) arg;
-}
-void *workerThread(void *arg) {
-	ThreadArgument *a = (ThreadArgument *)arg;
-	int **board = a->board;
-	int num = a->num;
-	int *isValid = a->isValid;
-	int currThread = a->currThread;
-	int maxThread = a->maxthread;
-
-	int base_size = NUMJOBS / maxThread;
-    int remainder = NUMJOBS % maxThread;
-
-    int start = currThread * base_size + (currThread < remainder ? currThread : remainder); // The start has to add the remainders assigned to previous threads
-    int size = base_size + (currThread < remainder ? 1 : 0); // The size has to add remainders to the size in the first threads
-
-	if (size == 0) {
-		// too many threads allocated for the work done.
-		return NULL;
-	}
-
-	// printf("thread: %d start %d size %d\n", currThread, start, size);
-
-	printf("Thread %d running: ", currThread);
-
-	for (int i = start; i < start + size && i < NUMJOBS; i++) {
-		if (!*isValid) {
-			return NULL; // if the board is no longer valid there isn't any point in continuing
-		}
-		if (i < SIZE) {
-			printf("Row: %d ", i + 1);
-		}
-		else if (i < SIZE * 2) {
-			printf("Col: %d ", (i - SIZE) + 1);
-		}
-		else if (i < SIZE * 3) {
-			printf("Blo: %d ", (i - SIZE * 2) + 1);
-		}
-	}
-
-	printf("\n");
-
-	printBoard(board);
-	printf("The Argument is %d\n", num);
-	return NULL;
-}
-
-int checkBoard(int **board, int maxThreads) {
-	if (maxThreads <= 0 || maxThreads > 27) {
-		printf("maxThreads can only be 1 or higher with a max of 27\n");
-		return -1;
-	}
-
-	pthread_t threadPids[maxThreads];
-	ThreadArgument threadArgs[maxThreads];
-
-	int isValid = 1;
-
-	int i;
-
-	for (i = 0; i < maxThreads; i++) {
-		threadArgs[i].board = board;
-		threadArgs[i].isValid = &isValid;
-		threadArgs[i].currThread = i;
-		threadArgs[i].maxthread = maxThreads;
-		pthread_create(&threadPids[i], NULL, workerThread, &threadArgs[i]);
-	}
-
-	for (i = 0; i < maxThreads; i++) {
-		if (threadPids[i] != 0) {
-			pthread_join(threadPids[i], NULL);
-		}
-	}
-
-	return isValid;
-}
 
 //check each row of the board for validity
-void *rowCheck(void *arg){
+void *rowCheck(void *arg) {
     //convert void pointer to ThreadArgument pointer
     ThreadArgument *a = (ThreadArgument *) arg;
-    
+
     int **board = a->board;
 
 	int overallValid = 1;
@@ -171,7 +93,7 @@ void *rowCheck(void *arg){
             //mark as seen
             seen[value-1] = 1;
         }
-        
+
         if(!valid){
 			overallValid = 0;
 		}
@@ -185,10 +107,10 @@ void *rowCheck(void *arg){
 }
 
 //check each column of the board for validity
-void *columnCheck(void *arg){
+void *columnCheck(void *arg) {
     //convert void pointer to ThreadArgument pointer
     ThreadArgument *a = (ThreadArgument *) arg;
-    
+
     int **board = a->board;
 
 	int overallValid = 1;
@@ -213,10 +135,10 @@ void *columnCheck(void *arg){
             //mark as seen
             seen[value-1] = 1;
         }
-        
+
         if(!valid){
             overallValid = 0;
-        }     
+        }
     }
 
 	if(overallValid == 0){
@@ -227,7 +149,7 @@ void *columnCheck(void *arg){
 }
 
 //check each 3x3 box of the board for validity
-void *boxCheck(void *arg){
+void *boxCheck(void *arg) {
 	ThreadArgument *a = (ThreadArgument *)arg;
 	int **board = a->board;
 
@@ -274,8 +196,78 @@ void *boxCheck(void *arg){
 	return NULL;
 }
 
+void *workerThread(void *arg) {
+	ThreadArgument *a = (ThreadArgument *)arg;
+	int **board = a->board;
+	int *isValid = a->isValid;
+	int currThread = a->currThread;
+	int maxThread = a->maxthread;
 
-int main(int argc, char **argv){
+	int base_size = NUMJOBS / maxThread;
+    int remainder = NUMJOBS % maxThread;
+
+    int start = currThread * base_size + (currThread < remainder ? currThread : remainder); // The start has to add the remainders assigned to previous threads
+    int size = base_size + (currThread < remainder ? 1 : 0); // The size has to add remainders to the size in the first threads
+
+	if (size == 0) {
+		// too many threads allocated for the work done.
+		return NULL;
+	}
+
+	printf("Thread %d running: ", currThread);
+
+	for (int i = start; i < start + size && i < NUMJOBS; i++) {
+		if (!*isValid) {
+			return NULL; // if the board is no longer valid there isn't any point in continuing
+		}
+		if (i < SIZE) {
+			printf("Row: %d ", i + 1);
+		}
+		else if (i < SIZE * 2) {
+			printf("Col: %d ", (i - SIZE) + 1);
+		}
+		else if (i < SIZE * 3) {
+			printf("Box: %d ", (i - SIZE * 2) + 1);
+		}
+	}
+
+	printf("\n");
+
+	return NULL;
+}
+
+int checkBoard(int **board, int maxThreads) {
+	if (maxThreads <= 0) {
+		printf("maxThreads can only be 1 or higher\n");
+		return -1;
+	}
+
+	pthread_t threadPids[maxThreads];
+	ThreadArgument threadArgs[maxThreads];
+
+	int isValid = 1;
+
+	int i;
+
+	for (i = 0; i < maxThreads; i++) {
+		threadArgs[i].board = board;
+		threadArgs[i].isValid = &isValid;
+		threadArgs[i].currThread = i;
+		threadArgs[i].maxthread = maxThreads;
+		pthread_create(&threadPids[i], NULL, workerThread, &threadArgs[i]);
+	}
+
+	for (i = 0; i < maxThreads; i++) {
+		if (threadPids[i] != 0) {
+			pthread_join(threadPids[i], NULL);
+		}
+	}
+
+	return isValid;
+}
+
+
+int main(int argc, char **argv) {
     //use command line to check which version to run using 1 or 2
 	int version;
 	if (argc < 2) {
@@ -300,27 +292,6 @@ int main(int argc, char **argv){
     }
 
 	int isValid = checkBoard(board, 9);
-	ThreadArgument args = {};
-
-	args.board = board;
-	args.isValid = &isValid;
-	args.num = 5;
-
-	pthread_t rowThread;
-	pthread_create(&rowThread, NULL, rowCheck, (void*)&args);
-	pthread_join(rowThread, NULL);
-	
-	pthread_t columnThread;
-	pthread_create(&columnThread, NULL, columnCheck, (void*)&args);
-	pthread_join(columnThread, NULL);
-
-	pthread_t boxThread;
-	pthread_create(&boxThread, NULL, boxCheck, (void*)&args);
-	pthread_join(boxThread, NULL);
-
-	pthread_t tid;
-	pthread_create(&tid, NULL, threadFuncTest, (void*)&args);
-	pthread_join(tid, NULL);
 
 	if (isValid == 0) {
 		printf("Board is considered invalid\n");
