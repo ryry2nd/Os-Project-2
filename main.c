@@ -204,6 +204,9 @@ int checkBoard(int **board, int maxThreads) {
 	return isValid;
 }
 
+#define ver1Threads 2
+#define ver2Threads 27
+
 
 int main(int argc, char **argv) {
     //use command line to check which version to run using 1 or 2
@@ -229,7 +232,12 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-	int isValid = checkBoard(board, 9);
+	int isValid;
+
+	if (version == 1)
+		isValid = checkBoard(board, ver1Threads);
+	else
+	 	isValid = checkBoard(board, ver2Threads);
 
 	if (isValid == 0) {
 		printf("Board is considered invalid\n");
