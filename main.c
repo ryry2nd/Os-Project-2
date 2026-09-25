@@ -235,6 +235,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
+	printBoard(board);
 	clock_t start = clock();
 
 	int isValid;
