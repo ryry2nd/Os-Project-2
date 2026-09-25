@@ -150,29 +150,25 @@ void *workerThread(void *arg) {
 		return NULL;
 	}
 
-	printf("Thread %d running: ", currThread); // debug statement
-
 	for (int i = start; i < start + size && i < NUMJOBS; i++) {
 		if (!*isValid) {
 			return NULL; // if the board is no longer valid there isn't any point in continuing
 		}
 		int check = 1;
 		if (i < SIZE) {
-			check = rowcheck(board, i);
+			check = rowCheck(board, i);
 		}
 		else if (i < SIZE * 2) {
-			check = colcheck(board, i - SIZE);
+			check = colCheck(board, i - SIZE);
 		}
 		else if (i < SIZE * 3) {
-			check = boxcheck(board, (i - SIZE * 2));
+			check = boxCheck(board, (i - SIZE * 2));
 		}
 		if (!check) {
 			*isValid = 0;
 			return NULL;
 		}
 	}
-
-	printf("\n");
 
 	return NULL;
 }
