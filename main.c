@@ -248,10 +248,10 @@ int main(int argc, char **argv) {
 	double elapsed = ((double)(clock() - start) / CLOCKS_PER_SEC) * 1000;
 
 	if (isValid == 0) {
-		printf("Board is considered invalid\n");
+		printf("Solution: No\n");
 	}
 	else if (isValid == 1) {
-		printf("Board is considered valid\n");
+		printf("Solution: Yes\n");
 	}
 
     printf("Runtime: %.3f ms\n", elapsed);
