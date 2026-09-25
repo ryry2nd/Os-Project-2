@@ -226,7 +226,8 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	printf("Running version %d\n", version);
+	//printf("Running version %d\n", version);
+	printf("BOARD STATE IN %s\n", FNAME);
 
     int **board = allocBoard();
 
