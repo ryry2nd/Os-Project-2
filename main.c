@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <time.h>
 
 #define SIZE 9
 
@@ -232,6 +233,8 @@ int main(int argc, char **argv) {
         return 1;
     }
 
+	clock_t start = clock();
+
 	int isValid;
 
 	if (version == 1)
@@ -246,6 +249,9 @@ int main(int argc, char **argv) {
 		printf("Board is considered valid\n");
 	}
 
+	double elapsed = (double)(clock() - start) / CLOCKS_PER_SEC;
+
+    printf("Runtime: %.5f seconds\n", elapsed);
 
 	deallocBoard(board);
     return 0;
