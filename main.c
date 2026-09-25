@@ -242,14 +242,14 @@ int main(int argc, char **argv) {
 	else
 	 	isValid = checkBoard(board, ver2Threads);
 
+	double elapsed = ((double)(clock() - start) / CLOCKS_PER_SEC) * 1000;
+
 	if (isValid == 0) {
 		printf("Board is considered invalid\n");
 	}
 	else if (isValid == 1) {
 		printf("Board is considered valid\n");
 	}
-
-	double elapsed = ((double)(clock() - start) / CLOCKS_PER_SEC) * 1000;
 
     printf("Runtime: %.3f ms\n", elapsed);
 
