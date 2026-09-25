@@ -8,12 +8,12 @@
 
 typedef struct {
     int **board;
-    int num;
     int currThread; // the id that shows which part of the board to do
 	int maxthread; // the maximum amount of threads being run
-	int *isValid;
+	int *isValid; // the final flag that says if the board is valid or not. if it is ever 0 the program terminates immediately
 } ThreadArgument;
 
+// Reads from the file and sends it to the board pointer
 int readBoard(int **board){
     FILE *file = fopen("input.txt", "r"); // Open the file for reading
     if (file == NULL) { //confirm file opened successfully
@@ -35,6 +35,7 @@ int readBoard(int **board){
     return 0;
 }
 
+// debug prints out the board
 void printBoard(int **board){
     for(int i = 0; i < SIZE; i++){
         for(int j = 0; j < SIZE; j++){
@@ -45,6 +46,7 @@ void printBoard(int **board){
     }
 }
 
+// uses malloc to allocate the memory for the board size
 int **allocBoard() {
 	// Allocate the pointer array first
 	int **board = (int**)malloc(SIZE * sizeof(int*));
@@ -57,6 +59,7 @@ int **allocBoard() {
 	return board;
 }
 
+// frees all the memory the board uses without causing segfaults or leaks
 void deallocBoard(int **board) {
 	for(int i = 0; i < SIZE; i++) {
 		free(board[i]); // free each row
@@ -128,9 +131,7 @@ int boxCheck(int **board, int boxNum){
 	return 1;
 }
 
-// void *threadFuncTest(void *arg) {
-// 	ThreadArgument *a = (ThreadArgument *) arg;
-// }
+// each thread runs this. it splits each job as even as possible for the amount of threads
 void *workerThread(void *arg) {
 	ThreadArgument *a = (ThreadArgument *)arg;
 	int **board = a->board;
@@ -149,52 +150,37 @@ void *workerThread(void *arg) {
 		return NULL;
 	}
 
-	// printf("thread: %d start %d size %d\n", currThread, start, size);
-
-	printf("thread %d running: ", currThread);
+	printf("Thread %d running: ", currThread); // debug statement
 
 	for (int i = start; i < start + size && i < NUMJOBS; i++) {
-
-		if(*(a->isValid) == 0){
-			return NULL;
+		if (!*isValid) {
+			return NULL; // if the board is no longer valid there isn't any point in continuing
 		}
-
+		int check = 1;
 		if (i < SIZE) {
-			printf("Row: %d ", i + 1);
-			if(rowCheck(board, i) == 0){
-				*(a->isValid) = 0;
-
-				return NULL;
-			}
+			check = rowcheck(board, i);
 		}
 		else if (i < SIZE * 2) {
-			printf("Col: %d ", (i - SIZE) + 1);
-			if(colCheck(board, i - SIZE) == 0){
-				*(a->isValid) = 0;
-
-				return NULL;
-			}
+			check = colcheck(board, i - SIZE);
 		}
 		else if (i < SIZE * 3) {
-			printf("Blo: %d ", (i - SIZE * 2) + 1);
-			if(boxCheck(board, i - (SIZE * 2)) == 0){
-				*(a->isValid) = 0;
-
-				return NULL;
-			}
+			check = boxcheck(board, (i - SIZE * 2));
 		}
-
+		if (!check) {
+			*isValid = 0;
+			return NULL;
+		}
 	}
 
 	printf("\n");
 
-	printBoard(board);
 	return NULL;
 }
 
+// it takes in the board and the max amount of threads you want and returns if it is valid or not
 int checkBoard(int **board, int maxThreads) {
-	if (maxThreads <= 0 || maxThreads > 27) {
-		printf("maxThreads can only be 1 or higher with a max of 27\n");
+	if (maxThreads <= 0) {
+		printf("maxThreads can only be 1 or higher\n");
 		return -1;
 	}
 
@@ -222,7 +208,8 @@ int checkBoard(int **board, int maxThreads) {
 	return isValid;
 }
 
-int main(int argc, char **argv){
+
+int main(int argc, char **argv) {
     //use command line to check which version to run using 1 or 2
 	int version;
 	if (argc < 2) {
@@ -247,15 +234,6 @@ int main(int argc, char **argv){
     }
 
 	int isValid = checkBoard(board, 9);
-	ThreadArgument args = {};
-
-	args.board = board;
-	args.isValid = &isValid;
-	args.num = 5;
-
-	// pthread_t tid;
-	// pthread_create(&tid, NULL, threadFuncTest, (void*)&args);
-	// pthread_join(tid, NULL);
 
 	if (isValid == 0) {
 		printf("Board is considered invalid\n");
