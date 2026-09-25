@@ -7,6 +7,8 @@
 
 #define NUMJOBS SIZE * 3
 
+#define FNAME "input.txt"
+
 typedef struct {
     int **board;
     int currThread; // the id that shows which part of the board to do
@@ -16,7 +18,7 @@ typedef struct {
 
 // Reads from the file and sends it to the board pointer
 int readBoard(int **board){
-    FILE *file = fopen("input.txt", "r"); // Open the file for reading
+    FILE *file = fopen(FNAME, "r"); // Open the file for reading
     if (file == NULL) { //confirm file opened successfully
         printf("Error opening file.\n");
         return 1;
