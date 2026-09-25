@@ -249,9 +249,9 @@ int main(int argc, char **argv) {
 		printf("Board is considered valid\n");
 	}
 
-	double elapsed = (double)(clock() - start) / CLOCKS_PER_SEC;
+	double elapsed = ((double)(clock() - start) / CLOCKS_PER_SEC) * 1000;
 
-    printf("Runtime: %.5f seconds\n", elapsed);
+    printf("Runtime: %.3f ms\n", elapsed);
 
 	deallocBoard(board);
     return 0;
