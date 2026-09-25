@@ -8,12 +8,12 @@
 
 typedef struct {
     int **board;
+    int num;
     int currThread; // the id that shows which part of the board to do
 	int maxthread; // the maximum amount of threads being run
-	int *isValid; // the final flag that says if the board is valid or not. if it is ever 0 the program terminates immediately
+	int *isValid;
 } ThreadArgument;
 
-// Reads from the file and sends it to the board pointer
 int readBoard(int **board){
     FILE *file = fopen("input.txt", "r"); // Open the file for reading
     if (file == NULL) { //confirm file opened successfully
@@ -35,7 +35,6 @@ int readBoard(int **board){
     return 0;
 }
 
-// debug prints out the board
 void printBoard(int **board){
     for(int i = 0; i < SIZE; i++){
         for(int j = 0; j < SIZE; j++){
@@ -46,7 +45,6 @@ void printBoard(int **board){
     }
 }
 
-// uses malloc to allocate the memory for the board size
 int **allocBoard() {
 	// Allocate the pointer array first
 	int **board = (int**)malloc(SIZE * sizeof(int*));
@@ -59,7 +57,6 @@ int **allocBoard() {
 	return board;
 }
 
-// frees all the memory the board uses without causing segfaults or leaks
 void deallocBoard(int **board) {
 	for(int i = 0; i < SIZE; i++) {
 		free(board[i]); // free each row
@@ -67,154 +64,73 @@ void deallocBoard(int **board) {
 	free(board); // free the pointer array itself
 }
 
+int rowCheck(int **board, int rowNum){
+	int seen[SIZE] = {0};
 
-//check each row of the board for validity
-void *rowCheck(void *arg) {
-    //convert void pointer to ThreadArgument pointer
-    ThreadArgument *a = (ThreadArgument *) arg;
+	for(int col = 0; col < SIZE; col++){
+		int value = board[rowNum][col];
 
-    int **board = a->board;
-
-	int overallValid = 1;
-
-    for(int row = 0; row < SIZE; row++){
-        int seen[9] = {0}; //array to track seen numbers in the row
-        int valid = 1;
-
-        for(int col = 0; col < SIZE; col++){
-            int value = board[row][col];
-
-            if(value < 1 || value > 9){
-                valid = 0;
-                break;
-            }
-
-            //if we have seen the number already the row is invalid
-            if(seen[value-1] == 1){
-                valid = 0;
-                break;
-            }
-            //mark as seen
-            seen[value-1] = 1;
-        }
-
-        if(!valid){
-			overallValid = 0;
-		}
-    }
-
-	if(overallValid == 0){
-		*a->isValid = 0;
-	}
-
-    return NULL;
-}
-
-//check each column of the board for validity
-void *columnCheck(void *arg) {
-    //convert void pointer to ThreadArgument pointer
-    ThreadArgument *a = (ThreadArgument *) arg;
-
-    int **board = a->board;
-
-	int overallValid = 1;
-
-    for(int col = 0; col < SIZE; col++){
-        int seen[9] = {0}; //array to track seen numbers in the column
-        int valid = 1;
-
-        for(int row = 0; row < SIZE; row++){
-            int value = board[row][col];
-
-            if(value < 1 || value > 9){
-                valid = 0;
-                break;
-            }
-
-            //if we have seen the number already the column is invalid
-            if(seen[value-1] == 1){
-                valid = 0;
-                break;
-            }
-            //mark as seen
-            seen[value-1] = 1;
-        }
-
-        if(!valid){
-            overallValid = 0;
-        }
-    }
-
-	if(overallValid == 0){
-		*a->isValid = 0;
-	}
-
-    return NULL;
-}
-
-//check each 3x3 box of the board for validity
-void *boxCheck(void *arg) {
-	ThreadArgument *a = (ThreadArgument *)arg;
-	int **board = a->board;
-
-	int overallValid = 1;
-
-	for(int box = 0; box < SIZE; box++){
-		int seen[9] = {0};
-		int valid = 1;
-
-		int startRow = (box/3) * 3;
-		int startCol = (box % 3) * 3;
-
-		//check 3 rows
-		for(int row = startRow; row < startRow + 3; row++){
-			//check 3 columns
-			for(int col = startCol; col < startCol + 3; col++){
-				int value = board[row][col];
-
-				if(value < 1 || value > 9){
-					valid = 0;
-					break;
-				}
-
-				if(seen[value - 1] == 1){
-					valid = 0;
-					break;
-				}
-				seen[value - 1] = 1;
-			}
-
-			if(valid == 0){
-				break;
-			}
+		if(value < 1 || value > 9){
+			return 0;
 		}
 
-		if(!valid){
-			overallValid = 0;
+		if(seen[value - 1] == 1){
+			return 0;
 		}
-	}
-	if(overallValid == 0){
-		*a->isValid = 0;
+
+		seen[value - 1] = 1;
 	}
 
-	return NULL;
-}
-
-// returns 1 if valid, returns 0 if not valid
-int rowcheck(int **board, int rownum) {
-	printf("Row: %d ", rownum + 1);
 	return 1;
 }
-int colcheck(int **board, int colnum) {
-	printf("Col: %d ", colnum + 1);
+
+int colCheck(int **board, int colNum){
+	int seen[SIZE] = {0};
+
+	for(int row = 0; row < SIZE; row++){
+		int value = board[row][colNum];
+
+		if(value < 1 || value > 9){
+			return 0;
+		}
+
+		if(seen[value - 1] == 1){
+			return 0;
+		}
+
+		seen[value - 1] = 1;
+	}
+
 	return 1;
 }
-int boxcheck(int **board, int boxnum) {
-	printf("Box: %d ", boxnum + 1);
-	return 1;// fun math fact the number of boxes is always equal to SIZE
+
+int boxCheck(int **board, int boxNum){
+	int seen[SIZE] = {0};
+
+	int startRow = (boxNum / 3) * 3;
+	int startCol = (boxNum % 3) * 3;
+
+	for(int row = startRow; row < startRow + 3; row++){
+		for(int col = startCol; col < startCol + 3; col++){
+			int value = board[row][col];
+
+			if(value < 1 || value > 9){
+				return 0;
+			}
+
+			if(seen[value - 1] == 1){
+				return 0;
+			}
+
+			seen[value - 1] = 1;
+		}
+	}
+	return 1;
 }
 
-// each thread runs this. it splits each job as even as possible for the amount of threads
+// void *threadFuncTest(void *arg) {
+// 	ThreadArgument *a = (ThreadArgument *) arg;
+// }
 void *workerThread(void *arg) {
 	ThreadArgument *a = (ThreadArgument *)arg;
 	int **board = a->board;
@@ -233,37 +149,52 @@ void *workerThread(void *arg) {
 		return NULL;
 	}
 
-	printf("Thread %d running: ", currThread); // debug statement
+	// printf("thread: %d start %d size %d\n", currThread, start, size);
+
+	printf("thread %d running: ", currThread);
 
 	for (int i = start; i < start + size && i < NUMJOBS; i++) {
-		if (!*isValid) {
-			return NULL; // if the board is no longer valid there isn't any point in continuing
-		}
-		int check = 1;
-		if (i < SIZE) {
-			check = rowcheck(board, i);
-		}
-		else if (i < SIZE * 2) {
-			check = colcheck(board, i - SIZE);
-		}
-		else if (i < SIZE * 3) {
-			check = boxcheck(board, (i - SIZE * 2));
-		}
-		if (!check) {
-			*isValid = 0;
+
+		if(*(a->isValid) == 0){
 			return NULL;
 		}
+
+		if (i < SIZE) {
+			printf("Row: %d ", i + 1);
+			if(rowCheck(board, i) == 0){
+				*(a->isValid) = 0;
+
+				return NULL;
+			}
+		}
+		else if (i < SIZE * 2) {
+			printf("Col: %d ", (i - SIZE) + 1);
+			if(colCheck(board, i - SIZE) == 0){
+				*(a->isValid) = 0;
+
+				return NULL;
+			}
+		}
+		else if (i < SIZE * 3) {
+			printf("Blo: %d ", (i - SIZE * 2) + 1);
+			if(boxCheck(board, i - (SIZE * 2)) == 0){
+				*(a->isValid) = 0;
+
+				return NULL;
+			}
+		}
+
 	}
 
 	printf("\n");
 
+	printBoard(board);
 	return NULL;
 }
 
-// it takes in the board and the max amount of threads you want and returns if it is valid or not
 int checkBoard(int **board, int maxThreads) {
-	if (maxThreads <= 0) {
-		printf("maxThreads can only be 1 or higher\n");
+	if (maxThreads <= 0 || maxThreads > 27) {
+		printf("maxThreads can only be 1 or higher with a max of 27\n");
 		return -1;
 	}
 
@@ -291,8 +222,7 @@ int checkBoard(int **board, int maxThreads) {
 	return isValid;
 }
 
-
-int main(int argc, char **argv) {
+int main(int argc, char **argv){
     //use command line to check which version to run using 1 or 2
 	int version;
 	if (argc < 2) {
@@ -317,6 +247,15 @@ int main(int argc, char **argv) {
     }
 
 	int isValid = checkBoard(board, 9);
+	ThreadArgument args = {};
+
+	args.board = board;
+	args.isValid = &isValid;
+	args.num = 5;
+
+	// pthread_t tid;
+	// pthread_create(&tid, NULL, threadFuncTest, (void*)&args);
+	// pthread_join(tid, NULL);
 
 	if (isValid == 0) {
 		printf("Board is considered invalid\n");
