@@ -24,9 +24,10 @@ int readBoard(int **board){
         return 1;
     }
 
+	// Read the board from the file into the 2D array
     for(int i = 0; i < SIZE; i++){
         for(int j = 0; j < SIZE; j++){
-            if(fscanf(file, "%d", board[i] + j) != 1){
+            if(fscanf(file, "%d", board[i] + j) != 1){ 
                 printf("Error reading board from file.\n");
                 fclose(file);
                 return 1;
@@ -70,9 +71,11 @@ void deallocBoard(int **board) {
 	free(board); // free the pointer array itself
 }
 
+//check if a row is valid by checking if all numbers 1-9 appear exactly once
 int rowCheck(int **board, int rowNum){
-	int seen[SIZE] = {0};
+	int seen[SIZE] = {0}; //store whether each number 1-9 has been seen in the row
 
+	//iterate through each column in the row to check for duplicates
 	for(int col = 0; col < SIZE; col++){
 		int value = board[rowNum][col];
 
@@ -90,9 +93,11 @@ int rowCheck(int **board, int rowNum){
 	return 1;
 }
 
+//check if a column is valid by checking if all numbers 1-9 appear exactly once
 int colCheck(int **board, int colNum){
-	int seen[SIZE] = {0};
+	int seen[SIZE] = {0}; //store whether each number 1-9 has been seen in the column
 
+	//iterate through each row in the column to check for duplicates
 	for(int row = 0; row < SIZE; row++){
 		int value = board[row][colNum];
 
@@ -110,12 +115,14 @@ int colCheck(int **board, int colNum){
 	return 1;
 }
 
+//check if a 3x3 box is valid by checking if all numbers 1-9 appear exactly once
 int boxCheck(int **board, int boxNum){
-	int seen[SIZE] = {0};
+	int seen[SIZE] = {0}; //store whether each number 1-9 has been seen in the box
 
-	int startRow = (boxNum / 3) * 3;
-	int startCol = (boxNum % 3) * 3;
+	int startRow = (boxNum / 3) * 3; //calculate the starting row of the box
+	int startCol = (boxNum % 3) * 3; //calculate the starting column of the box
 
+	//iterate through each cell in the 3x3 box to check for duplicates
 	for(int row = startRow; row < startRow + 3; row++){
 		for(int col = startCol; col < startCol + 3; col++){
 			int value = board[row][col];
@@ -159,12 +166,15 @@ void *workerThread(void *arg) {
 		}
 		int check = 1;
 		if (i < SIZE) {
+			//call the row check function to validate the row
 			check = rowCheck(board, i);
 		}
 		else if (i < SIZE * 2) {
+			//call the column check function to validate the column
 			check = colCheck(board, i - SIZE);
 		}
 		else if (i < SIZE * 3) {
+			//call the box check function to validate the box
 			check = boxCheck(board, (i - SIZE * 2));
 		}
 		if (!check) {
