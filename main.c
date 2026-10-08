@@ -259,13 +259,11 @@ int main(int argc, char **argv) {
 	double elapsed = ((double)(clock() - start) / CLOCKS_PER_SEC) * 1000;
 
 	if (isValid == 0) {
-		printf("Solution: No\n");
+		printf("Solution: No (%.3f ms)\n", elapsed);
 	}
 	else if (isValid == 1) {
-		printf("Solution: Yes\n");
+		printf("Solution: Yes (%.3f ms)\n", elapsed);
 	}
-
-    printf("Runtime: %.3f ms\n", elapsed);
 
 	deallocBoard(board);
     return 0;
